@@ -37,9 +37,10 @@ class UnityCommandBridge(Node):
         yaw     = max(-100.0, min(100.0, yaw))
 
         twist = Twist()
-        twist.linear.x  = forward
-        twist.linear.y  = 0.0
+        twist.linear.x  = 0.0
+        twist.linear.y  = forward
         twist.linear.z  = 0.0
+        
         twist.angular.x = 0.0
         twist.angular.y = 0.0
         twist.angular.z = yaw
@@ -66,4 +67,3 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
-
