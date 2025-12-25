@@ -18,7 +18,7 @@ public class HapticTelloUnity : MonoBehaviour
 
     void Start()
     {
-        ros = ROSConnection.instance;
+        ros = ROSConnection.GetOrCreateInstance();
         ros.RegisterPublisher<TwistMsg>(twistTopic);
         if (stylus == null)
         {
