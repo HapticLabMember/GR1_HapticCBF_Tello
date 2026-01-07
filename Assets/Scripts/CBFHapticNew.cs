@@ -4,82 +4,43 @@ using UnityEngine;
 
 public class CBFHapticNew : MonoBehaviour
 {
-    [SerializeField] public PlaceholderDroneMovement droneRotate;
-    [SerializeField] public PlaceholderDistanceCalculator objDist;
 
-    private Vector3 correctedVectorDifference = Vector3.zero;
-    private Vector3 center = Vector3.zero;
+    [SerializeField] public DroneController droneInputs;
 
-    [SerializeField] private float forceMultiplier = 0.3f;
+    [SerializeField] private double forceMultiplier = 0.3;
+    Vector3 center = new Vector3( 0f, 0f, 0f );
 
-    private float moveSpeed;
-    private float scale;
-    
-    void Awake()
-    {
-
-    }
 
     void Start()
     {
-        moveSpeed = droneRotate.moveSpeed;
-        scale = objDist.scale;
+
     }
 
     void Update()
     {
 
         //NOT using droneRotate.inputDir because the x and z coordinates fixed to math UNITY drone
-        Vector3 stylusPosition = GetStylusPositionWithoutY();
-        
-        float distance = objDist.distance;
-        bool objectInFront = objDist.objectInFront;
+        Vector3 droneDir = droneInputs.droneDir;
+
+        float rawInput = droneInputs.rawForward;
+        float input = droneInputs.forward;
 
 
-        /* Maybe set a max distance (1 meter?) and if the distance value drops below it
-         * you can start inccreasing force magnitude like maxDistance - currentDist
-         * That means the closer you get, the higher the value would become
-         * This way, the closer you get to object, the more force is felt
-         */
-
-
-        //Drone does not move, only rotateable when near an object. Also force is applied in the
-        //opposite direction (needs change so its constant and the force changes on distance)
          
 
-        if (objectInFront)
+        if (rawInput - input > 0f)
         {
-            //when the drone is near object, it applies force in opposite direction
-            //replace the distance with the message read from ROS1 MiDaS
-            //distance - minimumDistance (the closer it is to object, the less force felt??)
-            // 1 - (distance - minimumDistance) <-- this means the closer you are to obstacle,
-            // the larger the number becomes (multiplier)
-
-            //ApplyHapticForce(-droneRotate.forwardDir * (1 - (minimumDistance - distance)));
-
-            scale = objDist.scale;
-            Vector3 correctedVectorDifference = (stylusPosition * objDist.scale) - stylusPosition;
-            correctedVectorDifference = correctedVectorDifference.normalized;
-
-            float correctedMagnitude = 1 - scale;
-            //Debug.Log("Magnitude: " + correctedMagnitude);
-
-            if (correctedMagnitude > 1f)
-            {
-                correctedMagnitude = 1f;
-            }
-
-            ApplyHapticForce(correctedVectorDifference, (double)(correctedMagnitude * forceMultiplier) );
+            // when input = 0f, full force of 1N
+            // when input -> rawInput, force would approach 0f
+            ApplyHapticForce(-droneDir, (double)((rawInput-input) / rawInput) * forceMultiplier );
+            Debug.Log("Applied force: " + ((rawInput - input) / rawInput) * forceMultiplier);
 
         }
         else
         {
             ApplyHapticForce(center, 0d);
         }
-        // CHECK HapticToROSController.cs to fix the message send to ROS
-        // THAT or just copy and paste the message sending lines to PHDroneWithRotate
-        //That has the input xyz values AND rotate degrees (yaw) so send that as message
-        //if distance close, send only rotate message else, just xyz message
+
 
     }
 
